@@ -8,10 +8,10 @@ def get_dictionaries():
     d_two = open('dictionary_2.txt', 'r').readlines()
     
     for index,text in enumerate(d_one):
-        d_one[index] = text.strip()
+        d_one[index] = text.strip('\n\r')
     
     for index,text in enumerate(d_two):
-        d_two[index] = text.strip()
+        d_two[index] = text.strip('\n\r')
     
     return d_one, d_two
 '''
@@ -24,6 +24,8 @@ def find_character_indexes(text):
 '''Calculate the shifts between two equal length strings'''
 def calculate_shifts(string_one, string_two):
     all_differences = []
+    #print(len(string_one))
+    #print(len(string_two))
     for i in range(len(string_one)):
         difference = calc_shift(string_one[i], string_two[i])
         all_differences.append(difference)
@@ -101,11 +103,13 @@ def brute_key_len(cipher_text, plain_text):
 
 def find_pt(cipher_text, dictionary):
     for d in dictionary:
-        if len(brute_key_len(cipher_text, d)) > 0:
-            print(f'My guess for the plaintext is: {d}')
-            key = build_key(cipher_text, d, 21)
-            #print(decrypt(cipher_text, key))
-        #print(brute_key_len(cipher_text, d))
+        possible_key_lengths = brute_key_len(cipher_text, d)
+        if len(possible_key_lengths) > 0:
+            for key_len in possible_key_lengths:
+                key = build_key(cipher_text, d, key_len)
+                if decrypt(cipher_text, key) == d:
+                    print(f'My guess for the plaintext is: {d}')
+                    return
     
     
     
@@ -115,4 +119,3 @@ cipher_text = input('Input your ciphertext: ')
 #print(brute_key_len(cipher_text.strip(), dictionary_one[0]))
 #brute_key_len(dictionary_one[1], dictionary_one[0])
 find_pt(cipher_text, dictionary_one)
-
