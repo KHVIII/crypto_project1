@@ -35,7 +35,13 @@ def calc_shift(x,y):
     if diff < 0:
         diff = 27+diff
     return diff
-     
+    
+def do_shift(char, shift):
+    new_index = alphabet.index(char) + shift
+    if new_index >=27:
+        new_index -= 27
+    return alphabet[new_index]
+
 '''Given a list of indexes, return the characters at those indexes'''
 def get_chars_at_indexes(indexes, text):
     return [text[i] for i in indexes]
@@ -63,13 +69,30 @@ def find_same_shifts(plain_text, cipher_text):
     print(same_shifts)
 '''
 
+def build_key(cipher_text, plain_text, length):
+    key = []
+    for i in range(length):
+        key.append(calc_shift(plain_text[i], cipher_text[i]))
+    return key
+
+def decrypt(cipher_text, key):
+    ret = ''
+    i = 0
+    for c in cipher_text:
+        ret += do_shift(c, key[i])
+        i+=1
+        if i >= len(key):
+            i = 0
+    return ret
+
 def brute_key_len(cipher_text, plain_text):
     possible_lengths = []
     for key_len in range(1, max_key_length):
         cipher_chars = get_all_i_th_chars(cipher_text, key_len)
         plain_chars = get_all_i_th_chars(plain_text, key_len)
         
-        shifts = calculate_shifts(cipher_chars, plain_chars)
+        shifts = calculate_shifts(plain_chars, cipher_chars)
+        #print(shifts)
         if len(list(set(shifts))) == 1:
             #print(f'Possible key length {shifts[0]}')
             possible_lengths.append(key_len)
@@ -80,6 +103,8 @@ def find_pt(cipher_text, dictionary):
     for d in dictionary:
         if len(brute_key_len(cipher_text, d)) > 0:
             print(f'My guess for the plaintext is: {d}')
+            key = build_key(cipher_text, d, 21)
+            #print(decrypt(cipher_text, key))
         #print(brute_key_len(cipher_text, d))
     
     
@@ -87,6 +112,7 @@ def find_pt(cipher_text, dictionary):
 dictionary_one, dictionary_two = get_dictionaries()
 
 cipher_text = input('Input your ciphertext: ')
-#brute_key_len(cipher_text.strip(), dictionary_one[0])
+#print(brute_key_len(cipher_text.strip(), dictionary_one[0]))
 #brute_key_len(dictionary_one[1], dictionary_one[0])
 find_pt(cipher_text, dictionary_one)
+
