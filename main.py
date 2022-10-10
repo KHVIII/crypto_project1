@@ -49,7 +49,8 @@ def do_shift(char, shift):
 def get_chars_at_indexes(indexes, text):
     return [text[i] for i in indexes]
 
-'''Get every i_th character e.g. Get every 5th character'''
+'''Get every i_th character e.g. Get every 5th character
+'''
 def get_all_i_th_chars(text, i, start=0):
     ret = ''
     x = start
@@ -76,7 +77,6 @@ def decrypt(cipher_text, key):
             i = 0
     return ret
 
-'''Check all possible key lengths for consistent shifts in the cipher text'''
 def brute_key_len(cipher_text, plain_text):
     possible_lengths = []
     for key_len in range(1, max_key_length):
@@ -85,11 +85,11 @@ def brute_key_len(cipher_text, plain_text):
         
         shifts = calculate_shifts(plain_chars, cipher_chars)
         if len(list(set(shifts))) == 1:
+            #print(f'Possible key length {shifts[0]}')
             possible_lengths.append(key_len)
     
     return possible_lengths
 
-'''Solves test_one without bad data added'''
 def test_one(cipher_text, dictionary):
     for d in dictionary:
         possible_key_lengths = brute_key_len(cipher_text, d)
@@ -99,12 +99,7 @@ def test_one(cipher_text, dictionary):
                 if decrypt(cipher_text, key) == d:
                     return d
     return False
-'''
-def brute_force_garbage(cipher_text, dictionary):
-    for i in len(cipher_text):
-        cipher = f'{cipher_text[:i]}{cipher_text[i+1:]}'
-        ans = test_one(cipher_text, dictionary)
-'''
+
 def find_repeat_sequences(cipher_text, length = 3):
     ret = []
     for i in range(len(cipher_text) - length):
@@ -202,6 +197,8 @@ def find_pt(cipher_text, dictionary):
         score, pt = test_two(cipher_text)
         print(f'My guess for the plaintext is: {d}')
     
+start = time.time()
 dictionary_one, dictionary_two = get_dictionaries()
+
 cipher_text = input('Input your ciphertext: ')
 find_pt(cipher_text, dictionary_one)
