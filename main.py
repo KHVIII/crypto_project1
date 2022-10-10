@@ -187,7 +187,7 @@ def test_two(cipher_text):
         all_scores.append(candidate_freq_analysis(key_len_candidate, cipher_text))
     
     best = sorted(all_scores, key = lambda item: item[0], reverse = True)[0]
-    print(best)
+    return best
 
 def find_pt(cipher_text, dictionary):
     if d := test_one(cipher_text, dictionary):
