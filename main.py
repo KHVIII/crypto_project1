@@ -5,6 +5,7 @@ import copy
 
 alphabet = ' abcdefghijklmnopqrstuvwxyz'
 max_key_length = 26
+METHODS = ["v","b"] #different poly-alpha functions
 
 '''Load the two dictionaries and strip end of line characters'''
 def get_dictionaries(d_one = 'dictionary_1.txt', d_two='dictionary_2.txt'):
@@ -20,11 +21,12 @@ def get_dictionaries(d_one = 'dictionary_1.txt', d_two='dictionary_2.txt'):
     return d_one, d_two
 
 '''Calculate the shifts between two equal length strings'''
-def calculate_shifts(string_one, string_two):
+def calculate_shifts(string_one, string_two, method):
     all_differences = []
+    
     try:
         for i in range(len(string_one)):
-            difference = calc_shift(string_one[i], string_two[i])
+            difference = calc_shift(string_one[i], string_two[i], method)
             all_differences.append(difference)
     except:
         print('[!] String length difference in calculate_shifts')
@@ -32,18 +34,30 @@ def calculate_shifts(string_one, string_two):
     return all_differences
 
 '''Calculate the amount x must be shifted by to reach y'''
-def calc_shift(x,y):
-    diff = alphabet.index(x) - alphabet.index(y)
-    if diff < 0:
-        diff = 27+diff
-    return diff
+def calc_shift(x,y, method):
+    if method == "v":
+        diff = alphabet.index(x) - alphabet.index(y)
+        if diff < 0:
+            diff = 27+diff
+        return diff
+    elif method == "b":
+        diff = alphabet.index(x) + alphabet.index(y)
+        if diff >= 27:
+            diff -= 27
+        return diff
     
 '''Shift a character by shift places'''
-def do_shift(char, shift):
-    new_index = alphabet.index(char) + shift
-    if new_index >=27:
-        new_index -= 27
-    return alphabet[new_index]
+def do_shift(char, shift, method):
+    if method == "v":
+        new_index = alphabet.index(char) + shift
+        if new_index >=27:
+            new_index -= 27
+        return alphabet[new_index]
+    elif method == "b":
+        new_index = shift - alphabet.index(char)
+        if new_index < 0:
+            new_index += 27
+        return alphabet[new_index]
 
 '''Given a list of indexes, return the characters at those indexes'''
 def get_chars_at_indexes(indexes, text):
@@ -60,30 +74,30 @@ def get_all_i_th_chars(text, i, start=0):
     return ret
 
 '''Build the key based off the known plain text'''
-def build_key(cipher_text, plain_text, length):
+def build_key(cipher_text, plain_text, length, method):
     key = []
     for i in range(length):
-        key.append(calc_shift(plain_text[i], cipher_text[i]))
+        key.append(calc_shift(plain_text[i], cipher_text[i], method))
     return key
 
 '''Decrypt a text with the key'''
-def decrypt(cipher_text, key):
+def decrypt(cipher_text, key, method):
     ret = ''
     i = 0
     for c in cipher_text:
-        ret += do_shift(c, key[i])
+        ret += do_shift(c, key[i], method)
         i+=1
         if i >= len(key):
             i = 0
     return ret
 
-def brute_key_len(cipher_text, plain_text):
+def brute_key_len(cipher_text, plain_text, method = "v"):
     possible_lengths = []
     for key_len in range(1, max_key_length):
         cipher_chars = get_all_i_th_chars(cipher_text, key_len)
         plain_chars = get_all_i_th_chars(plain_text, key_len)
-        
-        shifts = calculate_shifts(plain_chars, cipher_chars)
+
+        shifts = calculate_shifts(plain_chars, cipher_chars, method)
         if len(list(set(shifts))) == 1:
             #print(f'Possible key length {shifts[0]}')
             possible_lengths.append(key_len)
@@ -92,12 +106,17 @@ def brute_key_len(cipher_text, plain_text):
 
 def test_one(cipher_text, dictionary):
     for d in dictionary:
-        possible_key_lengths = brute_key_len(cipher_text, d)
-        if len(possible_key_lengths) > 0:
-            for key_len in possible_key_lengths:
-                key = build_key(cipher_text, d, key_len)
-                if decrypt(cipher_text, key) == d:
-                    return d
+        #test for possible polyalphabetic ciphers
+        for method in METHODS:
+            possible_key_lengths = brute_key_len(cipher_text, d, method)
+            if len(possible_key_lengths) > 0:
+                for key_len in possible_key_lengths:
+                    key = build_key(cipher_text, d, key_len, method)
+                    if decrypt(cipher_text, key, method) == d:
+                        return d
+                
+
+        
     return False
 
 def find_repeat_sequences(cipher_text, length = 3):
@@ -196,6 +215,7 @@ def find_pt(cipher_text, dictionary):
     else:
         score, pt = test_two(cipher_text)
         print(f'My guess for the plaintext is: {d}')
+        return
     
 start = time.time()
 dictionary_one, dictionary_two = get_dictionaries()
