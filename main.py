@@ -84,7 +84,8 @@ def brute_key_len(cipher_text, plain_text):
         plain_chars = get_all_i_th_chars(plain_text, key_len)
         
         shifts = calculate_shifts(plain_chars, cipher_chars)
-        possible_lengths.extend(key_len)
+        if len(list(set(shifts))) == 1:
+            possible_lengths.append(key_len)
     
     return possible_lengths
 
