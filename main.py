@@ -21,17 +21,19 @@ def get_dictionaries(d_one = 'dictionary_1.txt', d_two='dictionary_2.txt'):
     return d_one, d_two
 
 '''Calculate the shifts between two equal length strings'''
-def calculate_shifts(string_one, string_two, method):
-    all_differences = []
+def compare_shifts(string_one, string_two, method):
+    prev_diff = calc_shift(string_one[0],string_two[0],method)
     
     try:
         for i in range(len(string_one)):
             difference = calc_shift(string_one[i], string_two[i], method)
-            all_differences.append(difference)
+            if difference != prev_diff:
+                return False
+            prev_diff = difference
     except:
         print('[!] String length difference in calculate_shifts')
 
-    return all_differences
+    return True
 
 '''Calculate the amount x must be shifted by to reach y'''
 def calc_shift(x,y, method):
@@ -81,7 +83,7 @@ def build_key(cipher_text, plain_text, length, method):
     return key
 
 '''Decrypt a text with the key'''
-def decrypt(cipher_text, key, method):
+def decrypt(cipher_text, key, method = "v"):
     ret = ''
     i = 0
     for c in cipher_text:
@@ -97,8 +99,7 @@ def brute_key_len(cipher_text, plain_text, method = "v"):
         cipher_chars = get_all_i_th_chars(cipher_text, key_len)
         plain_chars = get_all_i_th_chars(plain_text, key_len)
 
-        shifts = calculate_shifts(plain_chars, cipher_chars, method)
-        if len(list(set(shifts))) == 1:
+        if compare_shifts(plain_chars, cipher_chars, method):
             #print(f'Possible key length {shifts[0]}')
             possible_lengths.append(key_len)
     
